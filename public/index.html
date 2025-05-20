@@ -334,43 +334,57 @@
         .breakdown-timeline {
             margin: 20px 0;
             border: 1px solid var(--border-color);
-            padding: 10px;
-            border-radius: 4px;
+            padding: 20px;
+            border-radius: 8px;
             background-color: #f9f9fc;
             overflow-x: auto;
+            min-height: 250px;
         }
 
         .timeline-item {
             display: flex;
-            margin-bottom: 5px;
+            margin-bottom: 16px;
+            align-items: center;
         }
 
         .timeline-label {
             width: 120px;
             flex-shrink: 0;
             font-weight: 600;
-            padding-right: 10px;
+            padding-right: 15px;
             text-align: right;
+            font-size: 15px;
         }
 
         .timeline-bar {
             position: relative;
             flex-grow: 1;
-            height: 20px;
+            height: 40px;
             background-color: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
         }
 
         .disrepair-period {
             position: absolute;
+            top: 0;
             height: 100%;
             background-color: #ffcccc;
-            border: 1px solid #ff9999;
+            border: 2px solid #ff9999;
             box-sizing: border-box;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.2s ease;
+        }
+
+        .disrepair-period:hover {
+            background-color: #ffb3b3;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
         .timeline-scale {
             display: flex;
-            margin-top: 10px;
+            margin-top: 15px;
             margin-left: 120px;
             font-size: 0.8em;
             color: #666;
@@ -386,6 +400,7 @@
             position: absolute;
             margin-top: 5px;
             transform: translateX(-50%);
+            font-weight: 500;
         }
 
         .day-marker {
@@ -1326,36 +1341,35 @@ async function analyzeData() {
        }
 
 // Display detailed calculation breakdown
-// Display detailed calculation breakdown
 function displayCalculationBreakdown(originalPeriods, results) {
     // Show the container
     document.getElementById('calculationBreakdownContainer').style.display = 'block';
     
     // Process the periods to ensure dates are Date objects
-    const processedPeriods = originalPeriods.map(period => {
-        let startDate, endDate;
-        
-        // Handle UK format dates (DD/MM/YYYY)
-        if (typeof period.startDate === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(period.startDate)) {
-            const parts = period.startDate.split('/');
-            startDate = new Date(parts[2], parts[1] - 1, parts[0]);
-        } else {
-            startDate = new Date(period.startDate);
-        }
-        
-        if (typeof period.endDate === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(period.endDate)) {
-            const parts = period.endDate.split('/');
-            endDate = new Date(parts[2], parts[1] - 1, parts[0]);
-        } else {
-            endDate = new Date(period.endDate);
-        }
-        
-        return {
-            roomName: period.roomName,
-            startDate: startDate,
-            endDate: endDate
-        };
-    });
+const processedPeriods = originalPeriods.map(period => {
+    let startDate, endDate;
+    
+    // Better date parsing for DD/MM/YYYY format
+    if (typeof period.startDate === 'string' && period.startDate.includes('/')) {
+        const [day, month, year] = period.startDate.split('/').map(Number);
+        startDate = new Date(year, month - 1, day); // Month is 0-indexed in JavaScript
+    } else {
+        startDate = new Date(period.startDate);
+    }
+    
+    if (typeof period.endDate === 'string' && period.endDate.includes('/')) {
+        const [day, month, year] = period.endDate.split('/').map(Number);
+        endDate = new Date(year, month - 1, day);
+    } else {
+        endDate = new Date(period.endDate);
+    }
+    
+    return {
+        roomName: period.roomName,
+        startDate: startDate,
+        endDate: endDate
+    };
+});
     
     // Find overall date range
     const minDate = new Date(Math.min(...processedPeriods.map(p => p.startDate.getTime())));
@@ -1440,7 +1454,7 @@ function renderVisualTimeline(periods, minDate, maxDate) {
         bar.className = 'timeline-bar';
         
         // Calculate position and width
-        const startOffset = (period.startDate - minDate) / (1000 * 60 * 60 * 24);
+        const startOffset = Math.max(0, (period.startDate - minDate) / (1000 * 60 * 60 * 24));
         const width = (period.endDate - period.startDate) / (1000 * 60 * 60 * 24) + 1;
         
         const disrepairBar = document.createElement('div');
@@ -1455,12 +1469,14 @@ function renderVisualTimeline(periods, minDate, maxDate) {
         container.appendChild(timelineItem);
     });
     
-    // Add date scale
+    // Add date scale with clearer month markers
     const scale = document.createElement('div');
     scale.className = 'timeline-scale';
     
     const scaleBar = document.createElement('div');
     scaleBar.className = 'timeline-bar';
+    scaleBar.style.height = '20px';
+    scaleBar.style.marginTop = '5px';
     
     // Add month markers
     let currentMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
