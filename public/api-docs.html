@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disrepair Analysis API - Documentation</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        :root {
+            --primary-color: #26082a; /* FuturByte color */
+            --secondary-color: #b256bd; /* Lighter accent */
+            --accent-color: #ff9933; /* Orange accent */
+            --border-color: #d1e0ed;
+        }
+        
+        h1, h2, h3 {
+            color: var(--primary-color);
+        }
+        
+        h1 {
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+        
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+        }
+        
+        .endpoint {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        
+        .method {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .url {
+            font-family: monospace;
+            padding: 5px;
+            margin-left: 10px;
+        }
+        
+        .test-form {
+            background-color: #f5f9fc;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .response {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+            border-left: 4px solid var(--accent-color);
+        }
+        
+        .parameter-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .parameter-table th, .parameter-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .parameter-table th {
+            background-color: #f2f2f2;
+        }
+        
+        .required {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .optional {
+            color: #3498db;
+        }
+        
+        .note {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            height: 50px;
+            margin-right: 20px;
+        }
+        
+        a {
+            color: var(--secondary-color);
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .tab-container {
+            margin: 20px 0;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab-button {
+            background-color: #f1f1f1;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            color: #333;
+            font-weight: normal;
+        }
+        
+        .tab-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="images/logo.png" alt="FuturByte Logo" class="logo" onerror="this.style.display='none'">
+        <h1>Disrepair Analysis API Documentation</h1>
+    </div>
+    
+    <p>This API calculates overlapping periods of disrepair for properties and determines how many weeks had exactly 1, 2, 3, etc. rooms simultaneously in disrepair. It now also calculates what percentage of the total property was affected.</p>
+    
+    <div class="endpoint">
+        <div class="method">POST</div>
+        <span class="url">/api/calculate-disrepair</span>
+        <p>Calculates the number of weeks where exactly 1, 2, 3, etc. rooms were simultaneously in disrepair and what percentage of the total property this represents.</p>
+        
+        <h3>Request Parameters</h3>
+        <table class="parameter-table">
+            <thead>
+                <tr>
+                    <th>Parameter</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>periods</td>
+                    <td>Array</td>
+                    <td>Array of disrepair periods, each with roomName, startDate, and endDate</td>
+                    <td class="required">Yes</td>
+                </tr>
+                <tr>
+                    <td>totalRooms</td>
+                    <td>Number</td>
+                    <td>Total number of rooms in the property (including undamaged rooms)</td>
+                    <td class="optional">No (defaults to number of unique rooms in periods)</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="note">
+            <p><strong>Note:</strong> Dates should be in DD/MM/YYYY format (UK standard) or YYYY-MM-DD format (ISO standard).</p>
+        </div>
+        
+        <h3>Request Format</h3>
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" onclick="openTab(event, 'request-with-totalrooms')">With totalRooms</button>
+                <button class="tab-button" onclick="openTab(event, 'request-simple')">Simple Version</button>
+            </div>
+            
+            <div id="request-with-totalrooms" class="tab-content active">
+                <pre><code>{
+  "totalRooms": 10,
+  "periods": [
+    {
+      "roomName": "Bedroom 1",
+      "startDate": "12/01/2025",
+      "endDate": "09/05/2025"
+    },
+    {
+      "roomName": "Roof",
+      "startDate": "03/03/2025",
+      "endDate": "30/04/2025"
+    },
+    {
+      "roomName": "Kitchen",
+      "startDate": "15/03/2025",
+      "endDate": "12/05/2025"
+    }
+  ]
+}</code></pre>
+            </div>
+            
+            <div id="request-simple" class="tab-content">
+                <pre><code>{
+  "periods": [
+    {
+      "roomName": "Bedroom 1",
+      "startDate": "12/01/2025",
+      "endDate": "09/05/2025"
+    },
+    {
+      "roomName": "Roof",
+      "startDate": "03/03/2025",
+      "endDate": "30/04/2025"
+    }
+  ]
+}</code></pre>
+            </div>
+        </div>
+
+        <h3>Response Format</h3>
+        <pre><code>[
+  {
+    "roomCount": 1,
+    "weeksInDisrepair": 10.4,
+    "percentageOfProperty": 10.0
+  },
+  {
+    "roomCount": 2,
+    "weeksInDisrepair": 8.3,
+    "percentageOfProperty": 20.0
+  },
+  {
+    "roomCount": 3,
+    "weeksInDisrepair": 2.4,
+    "percentageOfProperty": 30.0
+  }
+]</code></pre>
+
+        <h3>Response Fields</h3>
+        <table class="parameter-table">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>roomCount</td>
+                    <td>Number</td>
+                    <td>Number of rooms simultaneously in disrepair</td>
+                </tr>
+                <tr>
+                    <td>weeksInDisrepair</td>
+                    <td>Number</td>
+                    <td>Number of weeks with exactly this many rooms in disrepair</td>
+                </tr>
+                <tr>
+                    <td>percentageOfProperty</td>
+                    <td>Number</td>
+                    <td>Percentage of the property affected (roomCount / totalRooms * 100)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="test-form">
+        <h2>Test the API</h2>
+        <p>Enter your request payload below and click "Send Request" to test the API.</p>
+        
+        <textarea id="requestPayload">{
+  "totalRooms": 10,
+  "periods": [
+    {
+      "roomName": "Bedroom 1",
+      "startDate": "12/01/2025",
+      "endDate": "09/05/2025"
+    },
+    {
+      "roomName": "Roof",
+      "startDate": "03/03/2025",
+      "endDate": "30/04/2025"
+    },
+    {
+      "roomName": "Kitchen",
+      "startDate": "15/03/2025",
+      "endDate": "12/05/2025"
+    }
+  ]
+}</textarea>
+        
+        <button onclick="testAPI()">Send Request</button>
+        
+        <div id="response" class="response">
+            <h3>Response</h3>
+            <pre id="responseContent"></pre>
+        </div>
+    </div>
+    
+    <h2>Integration Guide</h2>
+    <p>This API can be integrated with case management systems using HTTP requests.</p>
+    
+    <h3>Using cURL</h3>
+    <pre><code>curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"totalRooms":10,"periods":[{"roomName":"Bedroom 1","startDate":"12/01/2025","endDate":"09/05/2025"}]}' \
+  http://your-server.com/api/calculate-disrepair</code></pre>
+    
+    <h3>Using JavaScript</h3>
+    <pre><code>async function calculateDisrepair(periods, totalRooms) {
+  const response = await fetch('http://your-server.com/api/calculate-disrepair', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ 
+      periods: periods,
+      totalRooms: totalRooms
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return await response.json();
+}</code></pre>
+    
+    <h3>Using C# (.NET)</h3>
+    <pre><code>using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+public class DisrepairAnalysisRequest
+{
+    public int TotalRooms { get; set; }
+    public List&lt;DisrepairPeriod&gt; Periods { get; set; }
+}
+
+public class DisrepairPeriod
+{
+    public string RoomName { get; set; }
+    public string StartDate { get; set; }
+    public string EndDate { get; set; }
+}
+
+public async Task&lt;string&gt; CalculateDisrepair(DisrepairAnalysisRequest request)
+{
+    using (HttpClient client = new HttpClient())
+    {
+        var json = JsonSerializer.Serialize(request);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        var response = await client.PostAsync("http://your-server.com/api/calculate-disrepair", content);
+        
+        response.EnsureSuccessStatusCode();
+        return await response.Content.ReadAsStringAsync();
+    }
+}</code></pre>
+    
+    <h2>Common Questions</h2>
+    
+    <h3>How is the percentage of property calculated?</h3>
+    <p>The percentage of property affected is calculated as:</p>
+    <pre><code>percentageOfProperty = (roomCount / totalRooms) * 100</code></pre>
+    <p>For example, if 2 rooms out of a total of 10 rooms are in disrepair, the percentage is 20%.</p>
+    
+    <h3>What if I don't provide the totalRooms parameter?</h3>
+    <p>If you don't provide totalRooms, the API will use the number of unique rooms in the periods array as the total. This may not be accurate if there are rooms in the property that were never in disrepair.</p>
+    
+    <h3>How does the day/week calculation work?</h3>
+    <p>The API creates a day-by-day timeline and counts how many rooms are in disrepair on each day. It then groups consecutive days with the same number of rooms in disrepair and calculates the duration in weeks (days ÷ 7).</p>
+    
+    <footer>
+        Disrepair Analysis API Documentation | &copy; 2025 FuturByte | <a href="https://www.futurbyte.co" target="_blank">www.futurbyte.co</a>
+    </footer>
+    
+    <script>
+        function openTab(evt, tabId) {
+            // Declare all variables
+            var i, tabcontent, tabbuttons;
+
+            // Get all elements with class="tab-content" and hide them
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+
+            // Get all elements with class="tab-button" and remove the class "active"
+            tabbuttons = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tabbuttons.length; i++) {
+                tabbuttons[i].className = tabbuttons[i].className.replace(" active", "");
+            }
+
+            // Show the current tab, and add an "active" class to the button that opened the tab
+            document.getElementById(tabId).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+        
+        async function testAPI() {
+            const requestPayload = document.getElementById('requestPayload').value;
+            const responseDiv = document.getElementById('response');
+            const responseContent = document.getElementById('responseContent');
+            
+            try {
+                // Get the current URL and replace the path
+                const currentUrl = window.location.href;
+                const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/'));
+                const apiUrl = baseUrl + '/api/calculate-disrepair';
+                
+                responseDiv.style.display = 'block';
+                responseContent.textContent = 'Sending request...';
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: requestPayload
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `API error: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                responseDiv.style.display = 'block';
+                responseContent.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseDiv.style.display = 'block';
+                responseContent.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

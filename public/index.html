@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Disrepair Analysis Tool - FuturByte</title>
+    <style>
+        :root {
+            --primary-color: #26082a; /* FuturByte blue */
+            --secondary-color: #b256bd; /* Lighter blue for accents */
+            --accent-color: #ff9933; /* Orange accent */
+            --text-color: #333333;
+            --light-bg: #f5f9fc;
+            --border-color: #d1e0ed;
+            --success-color: #2ecc71;
+            --error-color: #e74c3c;
+            --info-color: #3498db;
+            --warning-color: #f39c12;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #fafafa;
+        }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 15px;
+            gap: 20px;
+        }
+        
+        .logo {
+            height: 50px;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            flex-grow: 1;
+            font-size: 28px;
+        }
+        
+        h2 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 22px;
+            margin-top: 0;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        input, textarea, button, select {
+            font-family: inherit;
+            font-size: 16px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+            outline: none;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 2px rgba(51, 185, 229, 0.2);
+        }
+        
+        textarea {
+            width: 100%;
+            height: 150px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: background-color 0.2s, transform 0.1s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            background-color: #003e77; /* Darker blue on hover */
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        button.secondary:hover {
+            background-color: #2aa5cc; /* Darker light blue on hover */
+        }
+        
+        button.accent {
+            background-color: var(--accent-color);
+        }
+        
+        button.accent:hover {
+            background-color: #e68a2e; /* Darker orange on hover */
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: white;
+        }
+        
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--light-bg);
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+        
+        .error {
+            color: var(--error-color);
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 4px;
+            background-color: #fceae9;
+            margin-top: 10px;
+            border-left: 4px solid var(--error-color);
+        }
+        
+        .success {
+            color: var(--success-color);
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 4px;
+            background-color: #e8f7ef;
+            margin-top: 10px;
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .info {
+            color: var(--info-color);
+            font-weight: 600;
+            padding: 12px;
+            border-radius: 4px;
+            background-color: #e8f4fc;
+            margin-top: 10px;
+            border-left: 4px solid var(--info-color);
+        }
+        
+        .loading {
+            margin-top: 15px;
+            font-style: italic;
+            color: #666;
+            padding: 10px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .toolbar {
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        #apiUrl {
+            width: 100%;
+        }
+        
+        .test-connection {
+            margin-top: 10px;
+        }
+        
+        .status-container {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        
+        .file-upload {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .file-info {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .flex-container {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 0.9em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        footer img {
+            height: 30px;
+            margin-bottom: 10px;
+        }
+        
+        .date-format-info {
+            background-color: #fff3cd;
+            border-radius: 4px;
+            padding: 12px;
+            margin-top: 10px;
+            color: #856404;
+            font-weight: 600;
+            border-left: 4px solid #ffc107;
+        }
+        
+        /* Custom file input styling */
+        .custom-file-input {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .custom-file-input input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .custom-file-input label {
+            display: inline-block;
+            padding: 10px 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 0;
+            font-weight: 600;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        .custom-file-input:hover label {
+            background-color: #2aa5cc;
+        }
+        
+        .file-name {
+            margin-left: 10px;
+            font-style: italic;
+            color: #666;
+        }
+        
+        /* Property information section styling */
+        .property-info input[type="number"] {
+            width: 100px;
+            text-align: center;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .toolbar {
+                flex-direction: column;
+            }
+        }
+
+        .breakdown-timeline {
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9f9fc;
+            overflow-x: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            margin-bottom: 5px;
+        }
+
+        .timeline-label {
+            width: 120px;
+            flex-shrink: 0;
+            font-weight: 600;
+            padding-right: 10px;
+            text-align: right;
+        }
+
+        .timeline-bar {
+            position: relative;
+            flex-grow: 1;
+            height: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .disrepair-period {
+            position: absolute;
+            height: 100%;
+            background-color: #ffcccc;
+            border: 1px solid #ff9999;
+            box-sizing: border-box;
+        }
+
+        .timeline-scale {
+            display: flex;
+            margin-top: 10px;
+            margin-left: 120px;
+            font-size: 0.8em;
+            color: #666;
+        }
+
+        .month-marker {
+            position: absolute;
+            height: 100%;
+            border-left: 1px dashed #ccc;
+        }
+
+        .month-label {
+            position: absolute;
+            margin-top: 5px;
+            transform: translateX(-50%);
+        }
+
+        .day-marker {
+            position: absolute;
+            top: 0;
+            width: 1px;
+            height: 5px;
+            background-color: #ddd;
+        }
+
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .breakdown-table th, .breakdown-table td {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.9em;
+        }
+
+        .breakdown-table tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .breakdown-explanation {
+            background-color: #f0f7ff;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+
+        .breakdown-explanation ol {
+            margin-left: 20px;
+            padding-left: 0;
+        }
+
+        .breakdown-explanation li {
+            margin-bottom: 8px;
+        }
+
+        .group-highlight {
+            background-color: #e6f7ff !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="images/logo.png" alt="FuturByte Logo" class="logo">
+        <h1>Disrepair Analysis Tool</h1>
+    </div>
+    
+    <div class="section">
+        <label for="apiUrl">API URL:</label>
+        <input type="text" id="apiUrl" value="api/calculate-disrepair">
+        <div class="test-connection">
+            <button onclick="testConnection()">Test Connection</button>
+            <div id="connectionStatus" class="status-container" style="display:none;"></div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Example Files</h2>
+        <p>Download these example files to test the upload functionality:</p>
+        <div class="flex-container">
+            <button onclick="downloadExampleCsv()">Download Example CSV</button>
+            <button onclick="downloadExampleJson()" class="secondary">Download Example JSON</button>
+        </div>
+        <div class="date-format-info">
+            <p>Note: This tool uses DD/MM/YYYY date format (UK standard)</p>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Upload File</h2>
+        <div class="file-upload">
+            <div class="custom-file-input">
+                <input type="file" id="fileUpload" accept=".csv,.json" onchange="updateFileName()">
+                <label for="fileUpload">Choose File</label>
+            </div>
+            <span id="fileName" class="file-name">No file selected</span>
+            <button onclick="processUploadedFile()" class="accent">Load File</button>
+        </div>
+        <p class="file-info">Accepted formats: CSV or JSON (max 1MB)</p>
+    </div>
+    
+    <div class="section property-info">
+        <h2>Property Information</h2>
+        <label for="totalRooms">Total Rooms in Property:</label>
+        <input type="number" id="totalRooms" min="1" value="10">
+        <p class="file-info">Enter the total number of rooms in the property, including undamaged rooms.</p>
+    </div>
+    
+    <div class="section">
+        <h2>Input Data</h2>
+        <div class="toolbar">
+            <button onclick="loadJsonSample()">Load JSON Sample</button>
+            <button onclick="loadCsvSample()" class="secondary">Load CSV Sample</button>
+            <button onclick="validateInputData()" class="secondary">Validate Input</button>
+            <button onclick="clearData()">Clear</button>
+        </div>
+        <label for="format">Format:</label>
+        <select id="format">
+            <option value="json">JSON</option>
+            <option value="csv">CSV</option>
+        </select>
+        <textarea id="dataInput" placeholder="Enter your data here..."></textarea>
+    </div>
+    
+    <div class="section">
+        <button onclick="analyzeData()" class="accent">Analyze Disrepair Data</button>
+        
+        <div id="loadingIndicator" class="loading" style="display: none;">
+            <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <style>
+                    .spinner {
+                        animation: rotate 2s linear infinite;
+                    }
+                    @keyframes rotate {
+                        100% { transform: rotate(360deg); }
+                    }
+                    .path {
+                        stroke: #0055a4;
+                        stroke-linecap: round;
+                        animation: dash 1.5s ease-in-out infinite;
+                    }
+                    @keyframes dash {
+                        0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+                        50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+                        100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+                    }
+                </style>
+                <circle class="path" cx="12" cy="12" r="10" fill="none" stroke-width="4"></circle>
+            </svg>
+            Processing data, please wait...
+        </div>
+        
+        <div id="messageContainer" style="display: none;"></div>
+    </div>
+    
+    <div id="resultsContainer" class="section" style="display: none;">
+        <h2>Analysis Results</h2>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Rooms in Disrepair</th>
+                    <th>Duration (Weeks)</th>
+                    <th>% of Property</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+        </table>
+    </div>
+
+    <div id="calculationBreakdownContainer" class="section" style="display: none;">
+    <h2>Calculation Breakdown</h2>
+    <p>This shows how the periods of disrepair overlap and the time periods used in the calculation:</p>
+    
+    <div class="breakdown-timeline" id="breakdownTimeline">
+        <!-- Timeline visualization will be inserted here -->
+    </div>
+    
+    <h3>Day-by-Day Breakdown</h3>
+    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+        <table id="dayByDayTable" class="breakdown-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Rooms in Disrepair</th>
+                    <th>Affected Rooms</th>
+                </tr>
+            </thead>
+            <tbody id="dayByDayBody"></tbody>
+        </table>
+    </div>
+    
+    <h3>Period Groups</h3>
+    <div style="margin-bottom: 20px;">
+        <table id="periodGroupsTable" class="breakdown-table">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Rooms in Disrepair</th>
+                    <th>Days</th>
+                    <th>Weeks</th>
+                </tr>
+            </thead>
+            <tbody id="periodGroupsBody"></tbody>
+        </table>
+    </div>
+    
+<div id="calculationBreakdownContainer" class="section" style="display: none;">
+    <h2>Calculation Breakdown</h2>
+    <p>This shows how the periods of disrepair overlap and the time periods used in the calculation:</p>
+    
+    <div class="breakdown-timeline" id="breakdownTimeline">
+        <!-- Timeline visualization will be inserted here -->
+    </div>
+    
+    <h3>Day-by-Day Breakdown</h3>
+    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
+        <table id="dayByDayTable" class="breakdown-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Rooms in Disrepair</th>
+                    <th>Affected Rooms</th>
+                </tr>
+            </thead>
+            <tbody id="dayByDayBody"></tbody>
+        </table>
+    </div>
+    
+    <h3>Period Groups</h3>
+    <div style="margin-bottom: 20px;">
+        <table id="periodGroupsTable" class="breakdown-table">
+            <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Rooms in Disrepair</th>
+                    <th>Days</th>
+                    <th>Weeks</th>
+                </tr>
+            </thead>
+            <tbody id="periodGroupsBody"></tbody>
+        </table>
+    </div>
+    
+    <div class="breakdown-explanation">
+        <h3>How the Calculation Works</h3>
+        <ol>
+            <li>The system counts which rooms are in disrepair on each day in the date range</li>
+            <li>Consecutive days with the same number of rooms in disrepair are grouped together</li>
+            <li>For each group, the duration is calculated in days and weeks</li>
+            <li>Groups with the same room count are combined for the final results</li>
+        </ol>
+    </div>
+</div>
+    
+    <footer>
+        <img src="images/logo.png" alt="FuturByte Logo" class="logo">
+        <p>Disrepair Analysis Tool v1.0 | &copy; 2025 FuturByte | <a href="https://www.futurbyte.co" target="_blank">www.futurbyte.co</a></p>
+    </footer>
+    
+    <script>
+        // Update file name display when a file is selected
+        function updateFileName() {
+            const fileInput = document.getElementById('fileUpload');
+            const fileNameElement = document.getElementById('fileName');
+            
+            if (fileInput.files.length > 0) {
+                fileNameElement.textContent = fileInput.files[0].name;
+            } else {
+                fileNameElement.textContent = 'No file selected';
+            }
+        }
+        
+        // Sample data for quick testing (with DD/MM/YYYY format and totalRooms)
+        const sampleJsonData = {
+            totalRooms: 10,
+            periods: [
+                {
+                    roomName: "Bedroom 1",
+                    startDate: "12/01/2025",
+                    endDate: "09/05/2025"
+                },
+                {
+                    roomName: "Roof",
+                    startDate: "03/03/2025",
+                    endDate: "30/04/2025"
+                },
+                {
+                    roomName: "Kitchen",
+                    startDate: "15/03/2025",
+                    endDate: "12/05/2025"
+                }
+            ]
+        };
+        
+        const sampleCsvData = 
+`roomName,startDate,endDate
+Bedroom 1,12/01/2025,09/05/2025
+Roof,03/03/2025,30/04/2025
+Kitchen,15/03/2025,12/05/2025`;
+
+        // Load JSON sample data into the textarea
+        function loadJsonSample() {
+            document.getElementById('format').value = 'json';
+            document.getElementById('dataInput').value = JSON.stringify(sampleJsonData, null, 2);
+            document.getElementById('totalRooms').value = sampleJsonData.totalRooms;
+            showMessage('Sample JSON data loaded', 'info');
+        }
+        
+        // Load CSV sample data into the textarea
+        function loadCsvSample() {
+            document.getElementById('format').value = 'csv';
+            document.getElementById('dataInput').value = sampleCsvData;
+            document.getElementById('totalRooms').value = 10; // Default to 10 rooms
+            showMessage('Sample CSV data loaded', 'info');
+        }
+        
+        // Clear all data
+        function clearData() {
+            document.getElementById('dataInput').value = '';
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('messageContainer').style.display = 'none';
+            document.getElementById('fileUpload').value = '';
+            document.getElementById('fileName').textContent = 'No file selected';
+        }
+        
+        // Show message in the message container
+        function showMessage(message, type = 'error') {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.textContent = message;
+            messageContainer.className = type;
+            messageContainer.style.display = 'block';
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+        
+        // Test the API connection
+        async function testConnection() {
+            const apiUrlBase = document.getElementById('apiUrl').value.split('/api/')[0];
+            const pingUrl = `${apiUrlBase}/api/ping`;
+            const statusContainer = document.getElementById('connectionStatus');
+            
+            statusContainer.innerHTML = 'Testing connection...';
+            statusContainer.style.display = 'block';
+            statusContainer.style.backgroundColor = '#f8f9fa';
+            
+            try {
+                const response = await fetch(pingUrl);
+                const data = await response.json();
+                
+                if (data.status === 'ok') {
+                    statusContainer.innerHTML = '✅ Connection successful! API is running.';
+                    statusContainer.style.backgroundColor = '#d4efdf';
+                    statusContainer.className = 'status-container success';
+                } else {
+                    throw new Error('Unexpected response from API');
+                }
+            } catch (error) {
+                statusContainer.innerHTML = `❌ Connection failed: ${error.message}`;
+                statusContainer.style.backgroundColor = '#fadbd8';
+                statusContainer.className = 'status-container error';
+            }
+        }
+        
+        // Process the uploaded file with security enhancements
+        function processUploadedFile() {
+            const fileInput = document.getElementById('fileUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showMessage('Please select a file to upload');
+                return;
+            }
+            
+            // Check file size (limit to 1MB)
+            if (file.size > 1024 * 1024) {
+                showMessage('File too large. Maximum size is 1MB.');
+                return;
+            }
+            
+            // Validate MIME type
+            const validTypes = ['text/csv', 'application/json', 'application/vnd.ms-excel', 'text/plain'];
+            if (!validTypes.includes(file.type) && 
+                !(file.type === '' && (file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.json')))) {
+                showMessage('Invalid file type. Please upload a CSV or JSON file.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                const contents = e.target.result;
+                
+                // Determine file type from extension
+                const fileName = file.name.toLowerCase();
+                
+                try {
+                    if (fileName.endsWith('.csv')) {
+                        // Validate CSV structure
+                        validateCsvStructure(contents);
+                        document.getElementById('format').value = 'csv';
+                        document.getElementById('dataInput').value = sanitizeInput(contents);
+                        showMessage(`CSV file "${sanitizeFilename(file.name)}" loaded successfully`, 'success');
+                    } else if (fileName.endsWith('.json')) {
+                        // Validate JSON structure
+                        validateJsonStructure(contents);
+                        document.getElementById('format').value = 'json';
+                        document.getElementById('dataInput').value = contents;
+                        
+                        // If JSON has totalRooms, update the input field
+                        try {
+                            const jsonData = JSON.parse(contents);
+                            if (jsonData.totalRooms) {
+                                document.getElementById('totalRooms').value = jsonData.totalRooms;
+                            }
+                        } catch (e) {
+                            // Ignore parsing errors here as the main validation already passed
+                        }
+                        
+                        showMessage(`JSON file "${sanitizeFilename(file.name)}" loaded successfully`, 'success');
+                    } else {
+                        showMessage('Unsupported file type. Please upload a CSV or JSON file.');
+                    }
+                } catch (error) {
+                    showMessage(`File validation error: ${error.message}`);
+                }
+            };
+            
+            reader.onerror = function() {
+                showMessage('Error reading file');
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        // Sanitize input to prevent XSS
+        function sanitizeInput(input) {
+            // Basic sanitization - remove script tags and other potentially dangerous content
+            return input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+                        .replace(/on\w+="[^"]*"/g, '')
+                        .replace(/javascript:/g, '');
+        }
+        
+        // Sanitize filename for display
+        function sanitizeFilename(filename) {
+            return filename.replace(/[^\w\s.-]/g, '');
+        }
+        
+        // Function to validate CSV structure
+        function validateCsvStructure(csvContent) {
+            const lines = csvContent.trim().split('\n');
+            if (lines.length < 2) {
+                throw new Error('CSV must have a header row and at least one data row');
+            }
+            
+            const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
+            const requiredFieldPatterns = [
+                /room.*name|name.*room/i,
+                /start.*date|date.*start/i,
+                /end.*date|date.*end/i
+            ];
+            
+            // Check for required fields (allowing for variations in naming)
+            for (let i = 0; i < requiredFieldPatterns.length; i++) {
+                const pattern = requiredFieldPatterns[i];
+                if (!headers.some(h => pattern.test(h))) {
+                    const fieldNames = ['room name', 'start date', 'end date'];
+                    throw new Error(`CSV must include a column for ${fieldNames[i]}`);
+                }
+            }
+            
+            // Validate each data row
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue; // Skip empty lines
+                
+                const values = lines[i].split(',');
+                if (values.length !== headers.length) {
+                    throw new Error(`Row ${i+1} has an incorrect number of fields`);
+                }
+                
+                // Get indices for date fields
+                const startDateIndex = headers.findIndex(h => /start.*date|date.*start/i.test(h));
+                const endDateIndex = headers.findIndex(h => /end.*date|date.*end/i.test(h));
+                
+                // Validate date formats if indices were found
+                if (startDateIndex >= 0 && !isValidDate(values[startDateIndex].trim())) {
+                    throw new Error(`Row ${i+1} has an invalid start date format. Use DD/MM/YYYY format.`);
+                }
+                
+                if (endDateIndex >= 0 && !isValidDate(values[endDateIndex].trim())) {
+                    throw new Error(`Row ${i+1} has an invalid end date format. Use DD/MM/YYYY format.`);
+                }
+            }
+            
+            return true;
+        }
+        
+        // Function to validate JSON structure
+        function validateJsonStructure(jsonContent) {
+            let jsonData;
+            
+            try {
+                jsonData = JSON.parse(jsonContent);
+            } catch (e) {
+                throw new Error(`Invalid JSON syntax: ${e.message}`);
+            }
+            
+            // Handle the case where the JSON is an array of periods
+            if (Array.isArray(jsonData)) {
+                jsonData = { periods: jsonData };
+            }
+            
+            if (!jsonData.periods) {
+                throw new Error('JSON must have a "periods" array');
+            }
+            
+            if (!Array.isArray(jsonData.periods)) {
+                throw new Error('The "periods" property must be an array');
+            }
+            
+            if (jsonData.periods.length === 0) {
+                throw new Error('The "periods" array must have at least one item');
+            }
+            
+            // Validate each period
+            for (let i = 0; i < jsonData.periods.length; i++) {
+                const period = jsonData.periods[i];
+                
+                if (!period.roomName) {
+                    throw new Error(`Period at index ${i} is missing roomName`);
+                }
+                
+                if (!period.startDate) {
+                    throw new Error(`Period at index ${i} is missing startDate`);
+                }
+                
+                if (!period.endDate) {
+                    throw new Error(`Period at index ${i} is missing endDate`);
+                }
+                
+                // Validate date formats
+                if (!isValidDate(period.startDate)) {
+                    throw new Error(`Period at index ${i} has an invalid startDate format. Use DD/MM/YYYY format.`);
+                }
+                
+                if (!isValidDate(period.endDate)) {
+                    throw new Error(`Period at index ${i} has an invalid endDate format. Use DD/MM/YYYY format.`);
+                }
+            }
+            
+            return true;
+        }
+        
+        // Helper function to validate date format (DD/MM/YYYY)
+        function isValidDate(dateStr) {
+            // Accept UK format (DD/MM/YYYY)
+            const datePattern = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/;
+            
+            const match = dateStr.trim().match(datePattern);
+            if (!match) {
+                return false;
+            }
+            
+            // Extract day, month, year
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10) - 1; // JS months are 0-indexed
+            const year = parseInt(match[3], 10);
+            
+            // Create date and check if valid
+            const date = new Date(year, month, day);
+            return date.getDate() === day && 
+                   date.getMonth() === month && 
+                   date.getFullYear() === year;
+        }
+        
+        // Convert DD/MM/YYYY to YYYY-MM-DD (for API)
+        function formatDateForAPI(dateStr) {
+            const parts = dateStr.trim().split('/');
+            if (parts.length !== 3) return dateStr; // Return as is if not in expected format
+            
+            const day = parts[0].padStart(2, '0');
+            const month = parts[1].padStart(2, '0');
+            const year = parts[2];
+            
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Parse CSV data into JSON
+        function parseCsv(csvData) {
+            const lines = csvData.trim().split('\n');
+            const rawHeaders = lines[0].split(',');
+            
+            // Process headers to handle different naming conventions
+            const headers = rawHeaders.map(header => {
+                const h = header.trim().toLowerCase();
+                
+                // Standardize header names
+                if (/room.*name|name.*room/i.test(h)) {
+                    return 'roomName';
+                } else if (/start.*date|date.*start/i.test(h)) {
+                    return 'startDate';
+                } else if (/end.*date|date.*end/i.test(h)) {
+                    return 'endDate';
+                }
+                
+                return h;
+            });
+            
+            const result = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue; // Skip empty lines
+                
+                const values = lines[i].split(',');
+                const obj = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    if (j < values.length) {
+                        obj[headers[j]] = values[j].trim();
+                    }
+                }
+                
+                // Only add if it has all required fields
+                if (obj.roomName && obj.startDate && obj.endDate) {
+                    result.push(obj);
+                }
+            }
+            
+            return result;
+        }
+        
+        // Validate input data manually
+        function validateInputData() {
+            const dataInput = document.getElementById('dataInput').value.trim();
+            const format = document.getElementById('format').value;
+            
+            if (!dataInput) {
+                showMessage('No data to validate. Please enter or upload data first.');
+                return;
+            }
+            
+            try {
+                let valid = false;
+                let message = '';
+                
+                if (format === 'csv') {
+                    valid = validateCsvStructure(dataInput);
+                    if (valid) {
+                        const periods = parseCsv(dataInput);
+                        message = `✅ Valid CSV with ${periods.length} disrepair period(s)`;
+                    }
+                } else {
+                    valid = validateJsonStructure(dataInput);
+                    const data = JSON.parse(dataInput);
+                    const periods = Array.isArray(data) ? data : data.periods;
+                    message = `✅ Valid JSON with ${periods.length} disrepair period(s)`;
+                }
+                
+                showMessage(message, 'success');
+            } catch (error) {
+                showMessage(`Validation error: ${error.message}`);
+            }
+        }
+        
+        // Generate and download example CSV file
+        function downloadExampleCsv() {
+            const csvContent = `roomName,startDate,endDate
+Bedroom 1,12/01/2025,09/05/2025
+Roof,03/03/2025,30/04/2025
+Kitchen,15/03/2025,12/05/2025
+Bathroom,01/02/2025,15/04/2025
+Living Room,20/01/2025,25/03/2025`;
+            
+            downloadFile('example-disrepair.csv', 'text/csv', csvContent);
+        }
+
+        // Generate and download example JSON file
+       function downloadExampleJson() {
+           const jsonData = {
+               totalRooms: 10,
+               periods: [
+                   {
+                       roomName: "Bedroom 1",
+                       startDate: "12/01/2025",
+                       endDate: "09/05/2025"
+                   },
+                   {
+                       roomName: "Roof",
+                       startDate: "03/03/2025",
+                       endDate: "30/04/2025"
+                   },
+                   {
+                       roomName: "Kitchen",
+                       startDate: "15/03/2025",
+                       endDate: "12/05/2025"
+                   },
+                   {
+                       roomName: "Bathroom",
+                       startDate: "01/02/2025",
+                       endDate: "15/04/2025"
+                   },
+                   {
+                       roomName: "Living Room",
+                       startDate: "20/01/2025",
+                       endDate: "25/03/2025"
+                   }
+               ]
+           };
+           
+           const jsonContent = JSON.stringify(jsonData, null, 2);
+           downloadFile('example-disrepair.json', 'application/json', jsonContent);
+       }
+
+       // Helper function to download a file
+       function downloadFile(filename, contentType, content) {
+           const element = document.createElement('a');
+           const file = new Blob([content], {type: contentType});
+           element.href = URL.createObjectURL(file);
+           element.download = filename;
+           document.body.appendChild(element);
+           element.click();
+           document.body.removeChild(element);
+       }
+       
+       // Main function to analyze the data
+async function analyzeData() {
+    const dataInput = document.getElementById('dataInput').value.trim();
+    const format = document.getElementById('format').value;
+    const apiUrl = document.getElementById('apiUrl').value;
+    const totalRooms = parseInt(document.getElementById('totalRooms').value, 10);
+    
+    // Show loading indicator
+    document.getElementById('loadingIndicator').style.display = 'block';
+    document.getElementById('messageContainer').style.display = 'none';
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('calculationBreakdownContainer').style.display = 'none';
+    
+    // Validate input
+    if (!dataInput) {
+        showMessage('Please enter data to analyze');
+        return;
+    }
+    
+    // Validate total rooms
+    if (isNaN(totalRooms) || totalRooms < 1) {
+        showMessage('Total rooms must be a positive number');
+        return;
+    }
+    
+    try {
+        // Parse input data
+        let requestData = {};
+        let originalPeriods = []; // Store the original periods for breakdown
+        
+        if (format === 'csv') {
+            try {
+                // Validate CSV structure
+                validateCsvStructure(dataInput);
+                
+                // Parse the CSV into the periods array
+                const periods = parseCsv(dataInput);
+                if (periods.length === 0) {
+                    throw new Error('No valid periods found in CSV');
+                }
+                
+                // Save original periods for breakdown
+                originalPeriods = periods;
+                
+                // Convert dates to ISO format for API
+                const transformedPeriods = periods.map(period => ({
+                    roomName: period.roomName,
+                    startDate: formatDateForAPI(period.startDate),
+                    endDate: formatDateForAPI(period.endDate)
+                }));
+                
+                requestData = { 
+                    periods: transformedPeriods,
+                    totalRooms: totalRooms
+                };
+            } catch (error) {
+                showMessage(`CSV error: ${error.message}`);
+                return;
+            }
+        } else {
+            // Try to parse as JSON
+            try {
+                // Validate JSON structure
+                validateJsonStructure(dataInput);
+                
+                // Parse the data
+                const parsedData = JSON.parse(dataInput);
+                
+                // Extract the periods array
+                const periodsArray = Array.isArray(parsedData) ? parsedData : parsedData.periods;
+                
+                // Save original periods for breakdown
+                originalPeriods = periodsArray;
+                
+                // Convert dates to ISO format for API
+                const transformedPeriods = periodsArray.map(period => ({
+                    roomName: period.roomName,
+                    startDate: formatDateForAPI(period.startDate),
+                    endDate: formatDateForAPI(period.endDate)
+                }));
+                
+                requestData = { 
+                    periods: transformedPeriods,
+                    totalRooms: totalRooms
+                };
+            } catch (error) {
+                showMessage(`JSON error: ${error.message}`);
+                return;
+            }
+        }
+        
+        console.log('Sending data to API:', requestData);
+        
+        // Make API request
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        });
+        
+        // Hide loading indicator
+        document.getElementById('loadingIndicator').style.display = 'none';
+        
+        // Handle errors
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `API error: ${response.status}`);
+        }
+        
+        // Process and display results
+        const results = await response.json();
+        displayResults(results, totalRooms);
+        
+        // Now display the calculation breakdown with the original periods
+        displayCalculationBreakdown(originalPeriods, results);
+        
+    } catch (error) {
+        showMessage(`Error: ${error.message}`);
+    }
+}
+       
+       // Updated display results function to include percentage column
+       function displayResults(results, totalRooms) {
+           const resultsBody = document.getElementById('resultsBody');
+           resultsBody.innerHTML = '';
+           
+           if (!results || results.length === 0) {
+               showMessage('No valid results returned');
+               return;
+           }
+           
+           let totalWeeks = 0;
+           
+           results.forEach(result => {
+               const row = document.createElement('tr');
+               
+               const roomCountCell = document.createElement('td');
+               roomCountCell.textContent = 
+                   `${result.roomCount} room${result.roomCount !== 1 ? 's' : ''}`;
+               
+               const weeksCell = document.createElement('td');
+               weeksCell.textContent = `${result.weeksInDisrepair} weeks`;
+               
+               // Calculate percentage for display if not provided by API
+               const percentageCell = document.createElement('td');
+               const percentage = result.percentageOfProperty || 
+                                 ((result.roomCount / totalRooms) * 100).toFixed(1);
+               percentageCell.textContent = `${percentage}%`;
+               
+               totalWeeks += parseFloat(result.weeksInDisrepair);
+               
+               row.appendChild(roomCountCell);
+               row.appendChild(weeksCell);
+               row.appendChild(percentageCell);
+               resultsBody.appendChild(row);
+           });
+           
+           // Add a summary row
+           const summaryRow = document.createElement('tr');
+           summaryRow.style.fontWeight = 'bold';
+           
+           const summaryLabelCell = document.createElement('td');
+           summaryLabelCell.textContent = 'Total Weighted Impact:';
+           
+           const summaryValueCell = document.createElement('td');
+           
+           // Calculate a weighted score (more rooms = worse disrepair)
+           let weightedScore = 0;
+           results.forEach(result => {
+               weightedScore += result.roomCount * result.weeksInDisrepair;
+           });
+           
+           summaryValueCell.textContent = `${weightedScore.toFixed(1)} room-weeks`;
+           
+           // Add a percentage impact summary cell
+           const summaryPercentageCell = document.createElement('td');
+           
+           // Calculate the average percentage impact (weighted by duration)
+           let totalPercentageImpact = 0;
+           results.forEach(result => {
+               const percentage = result.percentageOfProperty || 
+                                 ((result.roomCount / totalRooms) * 100);
+               totalPercentageImpact += percentage * result.weeksInDisrepair;
+           });
+           
+           const averagePercentageImpact = totalPercentageImpact / totalWeeks;
+           summaryPercentageCell.textContent = `${averagePercentageImpact.toFixed(1)}% avg.`;
+           
+           summaryRow.appendChild(summaryLabelCell);
+           summaryRow.appendChild(summaryValueCell);
+           summaryRow.appendChild(summaryPercentageCell);
+           resultsBody.appendChild(summaryRow);
+           
+           document.getElementById('resultsContainer').style.display = 'block';
+           
+           // Show a success message
+           showMessage('Analysis completed successfully', 'success');
+       }
+
+// Display detailed calculation breakdown
+// Display detailed calculation breakdown
+function displayCalculationBreakdown(originalPeriods, results) {
+    // Show the container
+    document.getElementById('calculationBreakdownContainer').style.display = 'block';
+    
+    // Process the periods to ensure dates are Date objects
+    const processedPeriods = originalPeriods.map(period => {
+        let startDate, endDate;
+        
+        // Handle UK format dates (DD/MM/YYYY)
+        if (typeof period.startDate === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(period.startDate)) {
+            const parts = period.startDate.split('/');
+            startDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+            startDate = new Date(period.startDate);
+        }
+        
+        if (typeof period.endDate === 'string' && /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(period.endDate)) {
+            const parts = period.endDate.split('/');
+            endDate = new Date(parts[2], parts[1] - 1, parts[0]);
+        } else {
+            endDate = new Date(period.endDate);
+        }
+        
+        return {
+            roomName: period.roomName,
+            startDate: startDate,
+            endDate: endDate
+        };
+    });
+    
+    // Find overall date range
+    const minDate = new Date(Math.min(...processedPeriods.map(p => p.startDate.getTime())));
+    const maxDate = new Date(Math.max(...processedPeriods.map(p => p.endDate.getTime())));
+    
+    // Create a day-by-day timeline
+    const timeline = [];
+    const currentDate = new Date(minDate);
+    
+    while (currentDate <= maxDate) {
+        const date = new Date(currentDate);
+        
+        // Find which rooms are in disrepair on this day
+        const roomsInDisrepair = processedPeriods
+            .filter(p => date >= p.startDate && date <= p.endDate)
+            .map(p => p.roomName);
+        
+        timeline.push({
+            date: date,
+            roomCount: roomsInDisrepair.length,
+            rooms: roomsInDisrepair
+        });
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    // Group consecutive days with the same room count
+    const groupedPeriods = [];
+    let currentGroup = null;
+    
+    timeline.forEach(day => {
+        if (!currentGroup || currentGroup.roomCount !== day.roomCount) {
+            if (currentGroup) {
+                groupedPeriods.push(currentGroup);
+            }
+            
+            currentGroup = {
+                startDate: new Date(day.date),
+                endDate: new Date(day.date),
+                roomCount: day.roomCount,
+                rooms: [...day.rooms]
+            };
+        } else {
+            currentGroup.endDate = new Date(day.date);
+            // Rooms might change even if count remains the same
+            currentGroup.rooms = [...day.rooms];
+        }
+    });
+    
+    if (currentGroup) {
+        groupedPeriods.push(currentGroup);
+    }
+    
+    // Render the visual timeline
+    renderVisualTimeline(processedPeriods, minDate, maxDate);
+    
+    // Render day-by-day breakdown
+    renderDayByDayBreakdown(timeline);
+    
+    // Render period groups breakdown
+    renderPeriodGroupsBreakdown(groupedPeriods);
+}
+
+// Render visual timeline
+function renderVisualTimeline(periods, minDate, maxDate) {
+    const container = document.getElementById('breakdownTimeline');
+    container.innerHTML = '';
+    
+    // Calculate total days and scale
+    const totalDays = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Create a timeline for each room
+    periods.forEach(period => {
+        const timelineItem = document.createElement('div');
+        timelineItem.className = 'timeline-item';
+        
+        const label = document.createElement('div');
+        label.className = 'timeline-label';
+        label.textContent = period.roomName;
+        
+        const bar = document.createElement('div');
+        bar.className = 'timeline-bar';
+        
+        // Calculate position and width
+        const startOffset = (period.startDate - minDate) / (1000 * 60 * 60 * 24);
+        const width = (period.endDate - period.startDate) / (1000 * 60 * 60 * 24) + 1;
+        
+        const disrepairBar = document.createElement('div');
+        disrepairBar.className = 'disrepair-period';
+        disrepairBar.style.left = `${(startOffset / totalDays) * 100}%`;
+        disrepairBar.style.width = `${(width / totalDays) * 100}%`;
+        disrepairBar.title = `${formatDisplayDate(period.startDate)} to ${formatDisplayDate(period.endDate)}`;
+        
+        bar.appendChild(disrepairBar);
+        timelineItem.appendChild(label);
+        timelineItem.appendChild(bar);
+        container.appendChild(timelineItem);
+    });
+    
+    // Add date scale
+    const scale = document.createElement('div');
+    scale.className = 'timeline-scale';
+    
+    const scaleBar = document.createElement('div');
+    scaleBar.className = 'timeline-bar';
+    
+    // Add month markers
+    let currentMonth = new Date(minDate.getFullYear(), minDate.getMonth(), 1);
+    
+    while (currentMonth <= maxDate) {
+        const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+        
+        // Calculate position
+        const monthOffset = Math.max(0, (currentMonth - minDate) / (1000 * 60 * 60 * 24));
+        
+        const marker = document.createElement('div');
+        marker.className = 'month-marker';
+        marker.style.left = `${(monthOffset / totalDays) * 100}%`;
+        
+        const label = document.createElement('div');
+        label.className = 'month-label';
+        label.textContent = currentMonth.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+        
+        marker.appendChild(label);
+        scaleBar.appendChild(marker);
+        
+        currentMonth = nextMonth;
+    }
+    
+    scale.appendChild(scaleBar);
+    container.appendChild(scale);
+}
+
+// Render day-by-day breakdown table
+function renderDayByDayBreakdown(timeline) {
+    const tbody = document.getElementById('dayByDayBody');
+    tbody.innerHTML = '';
+    
+    timeline.forEach(day => {
+        const row = document.createElement('tr');
+        
+        const dateCell = document.createElement('td');
+        dateCell.textContent = formatDisplayDate(day.date);
+        
+        const countCell = document.createElement('td');
+        countCell.textContent = day.roomCount;
+        
+        const roomsCell = document.createElement('td');
+        roomsCell.textContent = day.rooms.join(', ');
+        
+        row.appendChild(dateCell);
+        row.appendChild(countCell);
+        row.appendChild(roomsCell);
+        tbody.appendChild(row);
+    });
+}
+
+// Render period groups breakdown table
+function renderPeriodGroupsBreakdown(groupedPeriods) {
+    const tbody = document.getElementById('periodGroupsBody');
+    tbody.innerHTML = '';
+    
+    groupedPeriods.forEach(period => {
+        if (period.roomCount > 0) { // Only show periods with rooms in disrepair
+            const row = document.createElement('tr');
+            
+            const startDateCell = document.createElement('td');
+            startDateCell.textContent = formatDisplayDate(period.startDate);
+            
+            const endDateCell = document.createElement('td');
+            endDateCell.textContent = formatDisplayDate(period.endDate);
+            
+            const countCell = document.createElement('td');
+            countCell.textContent = `${period.roomCount} room${period.roomCount !== 1 ? 's' : ''}`;
+            
+            const days = Math.round((period.endDate - period.startDate) / (1000 * 60 * 60 * 24)) + 1;
+            const daysCell = document.createElement('td');
+            daysCell.textContent = days;
+            
+            const weeksCell = document.createElement('td');
+            weeksCell.textContent = (days / 7).toFixed(1);
+            
+            row.appendChild(startDateCell);
+            row.appendChild(endDateCell);
+            row.appendChild(countCell);
+            row.appendChild(daysCell);
+            row.appendChild(weeksCell);
+            tbody.appendChild(row);
+        }
+    });
+}
+
+// Format date for display (DD/MM/YYYY)
+function formatDisplayDate(date) {
+    return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`;
+}
+       
+       // Initialize with sample data on page load
+       document.addEventListener('DOMContentLoaded', function() {
+           loadJsonSample();
+       });
+   </script>
+</body>
+</html>
