@@ -7,7 +7,9 @@
     "start": "vercel dev",
     "deploy": "vercel --prod"
   },
-  "dependencies": {},
+  "dependencies": {
+    "dotenv": "^16.5.0"
+  },
   "engines": {
     "node": ">=14.x"
   }

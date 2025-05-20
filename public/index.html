@@ -721,9 +721,15 @@ Kitchen,15/03/2025,12/05/2025`;
             messageContainer.style.display = 'block';
             document.getElementById('loadingIndicator').style.display = 'none';
         }
-        
+
+function getApiHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'X-API-Key': 'key_abc123'
+  };
+}
         // Test the API connection
-    async function testConnection() {
+async function testConnection() {
     let apiUrl = document.getElementById('apiUrl').value;
     
     // Standardize the API URL format
@@ -740,6 +746,9 @@ Kitchen,15/03/2025,12/05/2025`;
     // Form the ping URL correctly
     const pingUrl = `${basePath}/api/ping`;
     
+    // Get the API key (make sure this matches the key in your environment variable)
+    const apiKey = 'key_abc123'; // Your internal API key
+    
     console.log('Testing connection to:', pingUrl);
     
     const statusContainer = document.getElementById('connectionStatus');
@@ -749,23 +758,18 @@ Kitchen,15/03/2025,12/05/2025`;
     statusContainer.style.backgroundColor = '#f8f9fa';
     
     try {
-        const response = await fetch(pingUrl);
+        const response = await fetch(pingUrl, {
+            headers: getApiHeaders()
+        });
         
         if (!response.ok) {
             throw new Error(`Server returned ${response.status}: ${response.statusText}`);
         }
         
-        const contentType = response.headers.get('content-type');
-        
-        if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            throw new Error(`Received non-JSON response: ${text.substring(0, 50)}...`);
-        }
-        
         const data = await response.json();
         
         if (data.status === 'ok') {
-            statusContainer.innerHTML = '✅ Connection successful! API is running.';
+            statusContainer.innerHTML = `✅ Connection successful! API is running. Authenticated as: ${data.clientName || 'Unknown client'}`;
             statusContainer.style.backgroundColor = '#d4efdf';
             statusContainer.className = 'status-container success';
         } else {
@@ -777,8 +781,7 @@ Kitchen,15/03/2025,12/05/2025`;
         statusContainer.className = 'status-container error';
         console.error('Connection test error:', error);
     }
-}
-        
+}        
         // Process the uploaded file with security enhancements
         function processUploadedFile() {
             const fileInput = document.getElementById('fileUpload');
@@ -1152,6 +1155,8 @@ async function analyzeData() {
     document.getElementById('resultsContainer').style.display = 'none';
     document.getElementById('calculationBreakdownContainer').style.display = 'none';
     
+    const apiKey = 'key_1'; 
+
     // Validate input
     if (!dataInput) {
         showMessage('Please enter data to analyze');
@@ -1235,9 +1240,7 @@ async function analyzeData() {
         // Make API request
         const response = await fetch(apiUrl, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: getApiHeaders(),
             body: JSON.stringify(requestData)
         });
         
