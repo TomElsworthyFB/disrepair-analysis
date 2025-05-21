@@ -1,8 +1,6 @@
-// api/ping.js
-const { validateApiKey } = require('../middleware');
+// api/test-rate.js
 const { rateLimit } = require('../rate-limiter');
 
-// Adapter function to use middleware with Vercel serverless functions
 function applyMiddleware(req, res, middleware) {
   return new Promise((resolve, reject) => {
     middleware(req, res, (result) => {
@@ -15,36 +13,33 @@ function applyMiddleware(req, res, middleware) {
 }
 
 module.exports = async (req, res) => {
-  // Enable CORS
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-FuturByte-Frontend');
   
-  // Handle OPTIONS requests
+  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   
   try {
-    // Apply rate limiting first
-    console.log('Applying rate limiting...');
+    // Apply rate limiting only
     await applyMiddleware(req, res, rateLimit);
-
-    // Apply authentication middleware
-    console.log('Applying authentication...');
-    await applyMiddleware(req, res, validateApiKey);
     
-    // If we get here, authentication was successful
-    // Return a simple response
+    // Return success with rate limit info
     return res.status(200).json({
-      status: 'ok',
-      message: 'API is running',
-      clientName: req.client?.name || 'Unknown client',
+      message: 'Rate limit test passed',
+      rateLimit: {
+        limit: res.getHeader('X-RateLimit-Limit'),
+        remaining: res.getHeader('X-RateLimit-Remaining'),
+        reset: res.getHeader('X-RateLimit-Reset')
+      },
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error processing ping request:', error);
+    console.error('Error testing rate limit:', error);
     return res.status(500).json({ 
       error: 'Server error',
       details: error.message

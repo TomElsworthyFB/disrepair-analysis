@@ -1,4 +1,6 @@
 // middleware.js
+const { rateLimit } = require('./rate-limiter');
+
 function validateApiKey(req, res, next) {
   // Check ONLY for the custom frontend header (most reliable method)
   const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
@@ -61,4 +63,4 @@ function validateApiKey(req, res, next) {
   }
 }
 
-module.exports = { validateApiKey };
+module.exports = { validateApiKey, rateLimit };

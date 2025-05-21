@@ -1,5 +1,6 @@
 // api/calculate-disrepair.js
 const { validateApiKey } = require('../middleware');
+const { rateLimit } = require('../rate-limiter');
 const { calculateDisrepairOverlap } = require('../calculator');
 
 // Adapter function to use middleware with Vercel serverless functions
@@ -18,7 +19,7 @@ module.exports = async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST');
+  res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-FuturByte-Frontend');
 
   // Handle OPTIONS request
@@ -35,7 +36,12 @@ module.exports = async (req, res) => {
   }
   
   try {
+    // Apply rate limiting first
+    console.log('Applying rate limiting...');
+    await applyMiddleware(req, res, rateLimit);
+
     // Apply authentication middleware
+    console.log('Applying authentication...');
     await applyMiddleware(req, res, validateApiKey);
     
     // If we get here, authentication was successful

@@ -245,6 +245,22 @@
         <div class="note">
             <p><strong>Note:</strong> Dates should be in DD/MM/YYYY format (UK standard) or YYYY-MM-DD format (ISO standard).</p>
         </div>
+
+        <div class="note">
+        <h3>Rate Limiting</h3>
+        <p>This API implements rate limiting to prevent abuse:</p>
+        <ul>
+            <li><strong>API Key Requests</strong>: Limited to 30 requests per hour per API key</li>
+            <li><strong>Frontend Requests</strong>: Limited to 60 requests per hour</li>
+        </ul>
+        <p>Rate limit information is provided in the response headers:</p>
+        <ul>
+            <li><code>X-RateLimit-Limit</code>: Maximum requests allowed per hour</li>
+            <li><code>X-RateLimit-Remaining</code>: Remaining requests in the current window</li>
+            <li><code>X-RateLimit-Reset</code>: Time when the rate limit resets</li>
+        </ul>
+        <p>When rate limits are exceeded, the API returns a 429 Too Many Requests response.</p>
+        </div>
         
         <h3>Request Format</h3>
         <div class="tab-container">
