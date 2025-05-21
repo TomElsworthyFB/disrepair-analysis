@@ -24,21 +24,29 @@ function rateLimit(req, res, next) {
              req.connection?.remoteAddress || 
              '0.0.0.0';
              
-  // Skip rate limiting for frontend requests (they're identified by the x-futurbyte-frontend header)
+  // Frontend requests are identified by the x-futurbyte-frontend header
   const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
-  if (isFrontendRequest) {
-    console.log('Frontend request - skipping rate limiting');
-    return next();
-  }
   
   // Use API key as identifier if available, otherwise use IP
   const identifier = apiKey || `ip:${ip}`;
   const storage = apiKey ? apiKeyLimits : ipLimits;
   
-  // Configure rate limits
-  // TODO: Move these to environment variables for production
-  const maxRequests = 5;  // 5 requests per minute for testing
-  const timeWindow = 60000; // 1 minute in milliseconds
+  // Configure rate limits based on request type
+  // Production rate limits as stated in the API documentation
+  let maxRequests;
+  let timeWindow;
+  
+  if (isFrontendRequest) {
+    // Frontend requests: 60 requests per hour
+    maxRequests = 60;
+    timeWindow = 60 * 60 * 1000; // 1 hour in milliseconds
+    console.log('Frontend request - using frontend rate limits');
+  } else {
+    // API key requests: 30 requests per hour per API key
+    maxRequests = 30;
+    timeWindow = 60 * 60 * 1000; // 1 hour in milliseconds
+    console.log('API request - using API key rate limits');
+  }
   
   // Log status before processing
   console.log(`Rate limit check for ${identifier}`);
@@ -68,7 +76,7 @@ function rateLimit(req, res, next) {
       console.log(`Rate limit exceeded for ${identifier}`);
       return res.status(429).json({
         error: 'Too Many Requests',
-        message: `Rate limit exceeded. Maximum ${maxRequests} requests per minute.`,
+        message: `Rate limit exceeded. Maximum ${maxRequests} requests per ${timeWindow / (60 * 1000)} minutes.`,
         resetAt: new Date(storage[identifier].timestamp + timeWindow).toISOString()
       });
     }
