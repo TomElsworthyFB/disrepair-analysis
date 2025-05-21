@@ -1,5 +1,5 @@
 // rate-limiter.js
-// Simple in-memory rate limiter for Vercel
+// In-memory rate limiter for Vercel
 
 // Storage objects for rate limiting (shared across invocations in same instance)
 const ipLimits = {};
@@ -30,9 +30,13 @@ function rateLimit(req, res, next) {
   const identifier = apiKey || `ip:${ip}`;
   const storage = apiKey ? apiKeyLimits : ipLimits;
   
-  // Set limits for testing
-  const maxRequests = 5;  // 5 requests per minute
-  const timeWindow = 60000; // 1 minute in milliseconds
+  // Different limits for different types of requests
+  const apiKeyLimitRequests = 30;  // 30 requests per hour for API key users
+  const ipLimitRequests = 60;      // 60 requests per hour for IP-based users
+  const timeWindow = 3600000;      // 1 hour in milliseconds
+  
+  // Set appropriate limits based on user type
+  const maxRequests = apiKey ? apiKeyLimitRequests : ipLimitRequests;
   
   // Log status before processing
   console.log(`Rate limit check for ${identifier}`);
@@ -62,7 +66,7 @@ function rateLimit(req, res, next) {
       console.log(`Rate limit exceeded for ${identifier}`);
       return res.status(429).json({
         error: 'Too Many Requests',
-        message: `Rate limit exceeded. Maximum ${maxRequests} requests per minute.`,
+        message: `Rate limit exceeded. Maximum ${maxRequests} requests per hour.`,
         resetAt: new Date(storage[identifier].timestamp + timeWindow).toISOString()
       });
     }
