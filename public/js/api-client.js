@@ -3,15 +3,20 @@
  * Functions for interacting with the disrepair analysis API
  */
 
+// Make sure visualization is globally available
+if (!window.visualization) {
+    console.error('Visualization module not loaded. Please check script loading order.');
+}
+
 /**
  * Gets the headers to use for API requests
  * @returns {Object} Headers object
  */
 function getApiHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'X-FuturByte-Frontend': 'true'
-  };
+    return {
+        'Content-Type': 'application/json',
+        'X-FuturByte-Frontend': 'true'
+    };
 }
 
 /**
@@ -72,6 +77,13 @@ async function testConnection() {
  * Analyzes disrepair data via the API
  */
 async function analyzeData() {
+    // First, make sure visualization module is loaded
+    if (!window.visualization || typeof window.visualization.displayResults !== 'function') {
+        showMessage('Error: Visualization module not loaded correctly. Please refresh the page.');
+        console.error('Visualization module missing or incomplete:', window.visualization);
+        return;
+    }
+
     const dataInput = document.getElementById('dataInput').value.trim();
     const format = document.getElementById('format').value;
     const apiUrl = document.getElementById('apiUrl').value;
@@ -102,6 +114,16 @@ async function analyzeData() {
         
         if (format === 'csv') {
             try {
+                // Check if fileHandling module is available
+                if (!window.fileHandling || typeof window.fileHandling.parseCsv !== 'function') {
+                    throw new Error('File handling module not loaded correctly');
+                }
+                
+                // Check if validation module is available
+                if (!window.validation || typeof window.validation.validateCsvStructure !== 'function') {
+                    throw new Error('Validation module not loaded correctly');
+                }
+                
                 // Validate CSV structure
                 window.validation.validateCsvStructure(dataInput);
                 
@@ -132,6 +154,11 @@ async function analyzeData() {
         } else {
             // Try to parse as JSON
             try {
+                // Check if validation module is available
+                if (!window.validation || typeof window.validation.validateJsonStructure !== 'function') {
+                    throw new Error('Validation module not loaded correctly');
+                }
+                
                 // Validate JSON structure
                 window.validation.validateJsonStructure(dataInput);
                 
@@ -181,6 +208,8 @@ async function analyzeData() {
         
         // Process and display results
         const results = await response.json();
+        
+        console.log('Displaying results with visualization module:', window.visualization);
         window.visualization.displayResults(results, totalRooms);
         
         // Now display the calculation breakdown with the original periods
@@ -188,6 +217,7 @@ async function analyzeData() {
         
     } catch (error) {
         showMessage(`Error: ${error.message}`);
+        console.error('Analysis error:', error);
     }
 }
 
@@ -207,6 +237,38 @@ function formatDateForAPI(dateStr) {
     return `${year}-${month}-${day}`;
 }
 
+// Make sure showMessage and toggleLoading are defined
+if (typeof showMessage !== 'function') {
+    function showMessage(message, type = 'error') {
+        const messageContainer = document.getElementById('messageContainer');
+        messageContainer.textContent = message;
+        messageContainer.className = type;
+        messageContainer.style.display = 'block';
+        if (document.getElementById('loadingIndicator')) {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+    }
+    
+    // Add to window if it doesn't exist
+    if (typeof window.showMessage !== 'function') {
+        window.showMessage = showMessage;
+    }
+}
+
+if (typeof toggleLoading !== 'function') {
+    function toggleLoading(show) {
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) {
+            loadingIndicator.style.display = show ? 'block' : 'none';
+        }
+    }
+    
+    // Add to window if it doesn't exist
+    if (typeof window.toggleLoading !== 'function') {
+        window.toggleLoading = toggleLoading;
+    }
+}
+
 // Export functions to the global scope
 window.apiClient = {
     testConnection,
@@ -214,3 +276,5 @@ window.apiClient = {
     getApiHeaders,
     formatDateForAPI
 };
+
+console.log('API Client module loaded:', window.apiClient);
