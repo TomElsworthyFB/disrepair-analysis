@@ -725,7 +725,7 @@ Kitchen,15/03/2025,12/05/2025`;
 function getApiHeaders() {
   return {
     'Content-Type': 'application/json',
-    'X-API-Key': '550e8400-e29b-41d4-a716-446655440000'
+    'X-FuturByte-Frontend': 'true'
   };
 }
         // Test the API connection
@@ -745,9 +745,6 @@ async function testConnection() {
     
     // Form the ping URL correctly
     const pingUrl = `${basePath}/api/ping`;
-    
-    // Get the API key (make sure this matches the key in your environment variable)
-    const apiKey = 'key_abc123'; // Your internal API key
     
     console.log('Testing connection to:', pingUrl);
     
@@ -1155,8 +1152,6 @@ async function analyzeData() {
     document.getElementById('resultsContainer').style.display = 'none';
     document.getElementById('calculationBreakdownContainer').style.display = 'none';
     
-    const apiKey = 'key_1'; 
-
     // Validate input
     if (!dataInput) {
         showMessage('Please enter data to analyze');

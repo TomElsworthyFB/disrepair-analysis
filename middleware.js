@@ -1,17 +1,28 @@
 // middleware.js
 function validateApiKey(req, res, next) {
-  // Handle preflight OPTIONS requests
-  if (req.method === 'OPTIONS') {
+  // Check ONLY for the custom frontend header (most reliable method)
+  const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
+  
+  // For usage tracking
+  const sourceType = isFrontendRequest ? 'frontend' : 'external-api';
+  req.sourceType = sourceType;
+  
+  // Log usage
+  console.log(`API Request: ${req.path} | Source: ${sourceType} | Time: ${new Date().toISOString()}`);
+  
+  // If it's a frontend request, bypass API key check
+  if (isFrontendRequest) {
+    req.client = { name: 'Frontend User', clientId: 'frontend' };
     return next();
   }
   
-  // Check for API key in headers
+  // For direct API access, require API key
   const apiKey = req.headers['x-api-key'];
   
   if (!apiKey) {
     return res.status(401).json({ 
       error: 'Unauthorized',
-      message: 'API key is required'
+      message: 'API key is required for direct API access. Please include an X-API-Key header.'
     });
   }
   
