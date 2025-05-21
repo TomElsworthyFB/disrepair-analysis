@@ -1,5 +1,5 @@
 // rate-limiter.js
-// In-memory rate limiter for Vercel
+// In-memory rate limiter for Vercel serverless functions
 
 // Storage objects for rate limiting (shared across invocations in same instance)
 const ipLimits = {};
@@ -7,6 +7,11 @@ const apiKeyLimits = {};
 
 /**
  * Rate limiting middleware
+ * Limits API requests based on API key or IP address
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
  */
 function rateLimit(req, res, next) {
   // Get current timestamp
@@ -19,7 +24,7 @@ function rateLimit(req, res, next) {
              req.connection?.remoteAddress || 
              '0.0.0.0';
              
-  // Skip rate limiting for frontend requests
+  // Skip rate limiting for frontend requests (they're identified by the x-futurbyte-frontend header)
   const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
   if (isFrontendRequest) {
     console.log('Frontend request - skipping rate limiting');
@@ -30,13 +35,10 @@ function rateLimit(req, res, next) {
   const identifier = apiKey || `ip:${ip}`;
   const storage = apiKey ? apiKeyLimits : ipLimits;
   
-  // Different limits for different types of requests
-  const apiKeyLimitRequests = 30;  // 30 requests per hour for API key users
-  const ipLimitRequests = 60;      // 60 requests per hour for IP-based users
-  const timeWindow = 3600000;      // 1 hour in milliseconds
-  
-  // Set appropriate limits based on user type
-  const maxRequests = apiKey ? apiKeyLimitRequests : ipLimitRequests;
+  // Configure rate limits
+  // TODO: Move these to environment variables for production
+  const maxRequests = 5;  // 5 requests per minute for testing
+  const timeWindow = 60000; // 1 minute in milliseconds
   
   // Log status before processing
   console.log(`Rate limit check for ${identifier}`);
@@ -66,13 +68,13 @@ function rateLimit(req, res, next) {
       console.log(`Rate limit exceeded for ${identifier}`);
       return res.status(429).json({
         error: 'Too Many Requests',
-        message: `Rate limit exceeded. Maximum ${maxRequests} requests per hour.`,
+        message: `Rate limit exceeded. Maximum ${maxRequests} requests per minute.`,
         resetAt: new Date(storage[identifier].timestamp + timeWindow).toISOString()
       });
     }
   }
   
-  // Add headers
+  // Add rate limit headers to response
   res.setHeader('X-RateLimit-Limit', maxRequests);
   res.setHeader('X-RateLimit-Remaining', Math.max(0, maxRequests - storage[identifier].count));
   res.setHeader('X-RateLimit-Reset', new Date(storage[identifier].timestamp + timeWindow).toISOString());

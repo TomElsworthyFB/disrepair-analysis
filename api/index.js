@@ -4,6 +4,11 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const { calculateDisrepairOverlap } = require('./calculator');
 
+/**
+ * Main Express application configuration and setup
+ * Sets up the API routes and middleware for the disrepair analysis tool
+ */
+
 // Create Express app
 const app = express();
 
@@ -14,13 +19,17 @@ app.use(bodyParser.json());
 // Serve static files from the public directory
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Simple test endpoint
+/**
+ * Simple test endpoint to check if API is running
+ */
 app.get('/api/ping', (req, res) => {
   res.json({ status: 'ok', message: 'API is running' });
 });
 
-// Main API endpoint for disrepair analysis
-// Find this route in your Express server file
+/**
+ * Main API endpoint for disrepair analysis
+ * Processes periods of disrepair and calculates overlaps
+ */
 app.post('/api/calculate-disrepair', (req, res) => {
   try {
     // Get disrepair periods and total rooms from request body
@@ -31,6 +40,7 @@ app.post('/api/calculate-disrepair', (req, res) => {
       return res.status(400).json({ error: 'Invalid input - Disrepair periods required' });
     }
     
+    // Validate each period has required properties
     for (const period of periods) {
       if (!period.roomName || !period.startDate || !period.endDate) {
         return res.status(400).json({ 
@@ -76,15 +86,22 @@ app.post('/api/calculate-disrepair', (req, res) => {
   }
 });
 
-// In api/index.js
+/**
+ * API documentation endpoint
+ * Serves the API documentation HTML page
+ */
 app.get('/api-docs', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/api-docs.html'));
 });
 
-// Start the server
+/**
+ * Start the server
+ * Listens on the specified port (default: 3000)
+ */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
   console.log(`- API available at http://localhost:${PORT}/api/calculate-disrepair`);
   console.log(`- Test interface at http://localhost:${PORT}`);
+  console.log(`- API documentation at http://localhost:${PORT}/api-docs`);
 });

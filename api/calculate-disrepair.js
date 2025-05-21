@@ -3,7 +3,14 @@ const { validateApiKey } = require('../middleware');
 const { rateLimit } = require('../rate-limiter');
 const { calculateDisrepairOverlap } = require('../calculator');
 
-// Adapter function to use middleware with Vercel serverless functions
+/**
+ * Adapter function to use middleware with Vercel serverless functions
+ * 
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ * @param {Function} middleware - Express middleware function to adapt
+ * @returns {Promise} Resolves when middleware completes
+ */
 function applyMiddleware(req, res, middleware) {
   return new Promise((resolve, reject) => {
     middleware(req, res, (result) => {
@@ -15,6 +22,10 @@ function applyMiddleware(req, res, middleware) {
   });
 }
 
+/**
+ * Main handler for the calculate-disrepair API endpoint
+ * Processes disrepair periods and calculates overlapping time periods
+ */
 module.exports = async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -22,7 +33,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-FuturByte-Frontend');
 
-  // Handle OPTIONS request
+  // Handle OPTIONS request (pre-flight)
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
@@ -57,6 +68,7 @@ module.exports = async (req, res) => {
       });
     }
     
+    // Validate each period has the required properties
     for (const period of periods) {
       if (!period.roomName || !period.startDate || !period.endDate) {
         return res.status(400).json({ 

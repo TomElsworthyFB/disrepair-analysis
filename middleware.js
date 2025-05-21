@@ -1,8 +1,16 @@
 // middleware.js
 const { rateLimit } = require('./rate-limiter');
 
+/**
+ * Validate API key middleware
+ * Verifies that requests have a valid API key, except for frontend requests
+ * 
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ * @param {Function} next - Express next middleware function
+ */
 function validateApiKey(req, res, next) {
-  // Check ONLY for the custom frontend header (most reliable method)
+  // Check for the custom frontend header
   const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
   
   // For usage tracking
@@ -23,7 +31,7 @@ function validateApiKey(req, res, next) {
   
   if (!apiKey) {
     return res.status(401).json({ 
-      error: 'Unauthorized',
+      error: 'Unauthorised',
       message: 'API key is required for direct API access. Please include an X-API-Key header.'
     });
   }
@@ -36,7 +44,7 @@ function validateApiKey(req, res, next) {
     // Validate the key
     if (!clientInfo) {
       return res.status(401).json({ 
-        error: 'Unauthorized',
+        error: 'Unauthorised',
         message: 'Invalid API key'
       });
     }
@@ -44,7 +52,7 @@ function validateApiKey(req, res, next) {
     // Check if key is active
     if (clientInfo.active === false) {
       return res.status(401).json({ 
-        error: 'Unauthorized',
+        error: 'Unauthorised',
         message: 'API key is inactive'
       });
     }

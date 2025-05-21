@@ -1,14 +1,7 @@
 /**
  * Calculate overlapping disrepair periods with percentage of property affected
  * @param {Array} periods - Array of disrepair periods with roomName, startDate, endDate
- * @param {Number} totalRooms - Total number of rooms in the property
- * @param {Array} [rooms] - Optional array of all room names
- * @returns {Array} Results with roomCount, weeksInDisrepair, and percentageOfProperty
- */
-/**
- * Calculate overlapping disrepair periods with percentage of property affected
- * @param {Array} periods - Array of disrepair periods with roomName, startDate, endDate
- * @param {Number} totalRooms - Total number of rooms in the property
+ * @param {Number} totalRooms - Total number of rooms in the property (defaults to number of unique rooms if not provided)
  * @returns {Array} Results with roomCount, weeksInDisrepair, and percentageOfProperty
  */
 function calculateDisrepairOverlap(periods, totalRooms = null) {
@@ -114,30 +107,8 @@ function calculateDisrepairOverlap(periods, totalRooms = null) {
 
 /**
  * Format date from DD/MM/YYYY (UK format) to YYYY-MM-DD (ISO format)
- */
-function formatDateForProcessing(dateStr) {
-  // Check if it's already in ISO format
-  if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    return dateStr;
-  }
-  
-  // Parse DD/MM/YYYY format
-  const parts = dateStr.split('/');
-  if (parts.length === 3) {
-    const day = parts[0].padStart(2, '0');
-    const month = parts[1].padStart(2, '0');
-    const year = parts[2];
-    return `${year}-${month}-${day}`;
-  }
-  
-  // Return as is if can't parse
-  return dateStr;
-}
-
-module.exports = { calculateDisrepairOverlap };
-
-/**
- * Format date from DD/MM/YYYY (UK format) to YYYY-MM-DD (ISO format)
+ * @param {string} dateStr - Date string to format
+ * @returns {string} Formatted date string in YYYY-MM-DD format
  */
 function formatDateForProcessing(dateStr) {
   // Check if it's already in ISO format
