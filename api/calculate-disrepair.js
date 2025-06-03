@@ -31,7 +31,7 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'OPTIONS, POST, GET');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-FuturByte-Frontend');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-Lexiotech-Frontend');
 
   // Handle OPTIONS request (pre-flight)
   if (req.method === 'OPTIONS') {

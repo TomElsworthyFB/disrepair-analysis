@@ -15,7 +15,7 @@ if (!window.visualization) {
 function getApiHeaders() {
     return {
         'Content-Type': 'application/json',
-        'X-FuturByte-Frontend': 'true'
+        'X-Lexiotech-Frontend': 'true'
     };
 }
 

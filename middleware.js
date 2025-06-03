@@ -11,7 +11,7 @@ const { rateLimit } = require('./rate-limiter');
  */
 function validateApiKey(req, res, next) {
   // Check for the custom frontend header
-  const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
+  const isFrontendRequest = req.headers['x-lexiotech-frontend'] === 'true';
   
   // For usage tracking
   const sourceType = isFrontendRequest ? 'frontend' : 'external-api';

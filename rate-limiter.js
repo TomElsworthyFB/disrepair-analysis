@@ -24,8 +24,8 @@ function rateLimit(req, res, next) {
              req.connection?.remoteAddress || 
              '0.0.0.0';
              
-  // Frontend requests are identified by the x-futurbyte-frontend header
-  const isFrontendRequest = req.headers['x-futurbyte-frontend'] === 'true';
+  // Frontend requests are identified by the x-lexiotech-frontend header
+  const isFrontendRequest = req.headers['x-lexiotech-frontend'] === 'true';
   
   // Use API key as identifier if available, otherwise use IP
   const identifier = apiKey || `ip:${ip}`;
