@@ -1,7 +1,7 @@
 {
-  "name": "disrepair-analysis-api",
+  "name": "lexiotech-disrepair-analysis-api",
   "version": "1.0.0",
-  "description": "API for calculating overlapping periods of disrepair",
+  "description": "Lexiotech API for calculating overlapping periods of disrepair",
   "main": "index.js",
   "scripts": {
     "start": "vercel dev",
